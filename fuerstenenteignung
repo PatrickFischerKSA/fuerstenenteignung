@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fürstenenteignung – Familiendrama</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f7f1; padding: 20px; }
+    .container { max-width: 900px; margin: auto; background: white; border: 2px solid #b8860b; padding: 20px; border-radius: 6px; }
+    .header { background: #b8860b; color: white; padding: 10px; border-radius: 4px; }
+    .button { display: block; width: 100%; margin: 8px 0; padding: 10px; background: #fef8e7; border: 1px solid #b8860b; border-radius: 4px; cursor: pointer; text-align: left; }
+    .button:hover { background: #fff5d3; }
+    .scenario { white-space: pre-wrap; background: #fffaf0; padding: 15px; border: 1px solid #e3c684; border-radius: 4px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<!-- React + ReactDOM + Babel via CDN -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+
+const { useState } = React;
+
+const characters = ['hildegard', 'luise', 'peter', 'pinkas'];
+const characterNames = {
+  hildegard: 'Hildegard',
+  luise: 'Luise',
+  peter: 'Peter',
+  pinkas: 'Pinkas'
+};
+
+const stepOneOptions = {
+  hildegard: [
+    { id: 'h1', text: 'Zustimmend nicken: "Ja, mein Lieber, du hast vollkommen recht. Wir müssen zusammenhalten."', trait: 'unterwerfend', tone: 'supportiv' },
+    { id: 'h2', text: 'Zurückhaltend schweigen und nervös die Serviette falten', trait: 'unsicher', tone: 'neutral' },
+    { id: 'h3', text: 'Vorsichtig sagen: "Vielleicht sollten wir uns das noch überlegen... die Situation hat ja zwei Seiten."', trait: 'nachdenklich', tone: 'vermittelnd' },
+  ],
+  luise: [
+    { id: 'l1', text: 'Aufgeregt unterbrechen: "Ach, Vater, wisst ihr, Friedrich und ich planen gerade unseren Sommerball! Die Dekoration wird..."', trait: 'naiv', tone: 'ablenkend' },
+    { id: 'l2', text: 'Unschuldig lächeln: "Aber es ist doch gar nicht so schlimm, oder? Die Menschen wollen doch nur ein bisschen helfen..."', trait: 'verträumt', tone: 'verharmlosend' },
+    { id: 'l3', text: 'Eifrig nicken: "Ja, ja, natürlich! Was auch immer ihr sagt!"', trait: 'zustimmend', tone: 'blind-loyal' },
+  ],
+  peter: [
+    { id: 'p1', text: 'Enthusiastisch vorgebeugt: "Vater, du sprichst mir aus der Seele! Dieses Gut ist unser rechtmäßiges Erbe, und ich werde alles tun, um es zu schützen!"', trait: 'geldgierig', tone: 'enthusiastisch' },
+    { id: 'p2', text: 'Mit erhobener Stimme, Faust auf den Tisch: "Es ist wichtig, dass wir uns JETZT wehren! Nicht morgen, nicht nächste Woche - JETZT!"', trait: 'aufbrausend', tone: 'aggressiv' },
+    { id: 'p3', text: 'Zurückhaltend schweigen und die anderen abwartend beobachten', trait: 'abwartend', tone: 'beobachtend' },
+  ],
+  pinkas: [
+    { id: 'pi1', text: 'Ruhig aber bestimmt: "Vater, die Armen haben auch Angst um ihre Existenz. Sie können nichts für dieses Gesetz. Sie hoffen nur auf etwas Gerechtigkeit."', trait: 'mitfühlend', tone: 'liberal' },
+    { id: 'pi2', text: 'Stumm bleiben und Marie, die Bedienstete, unauffällig ansehen', trait: 'verschwiegen', tone: 'neutral' },
+    { id: 'pi3', text: 'Halblaut vor sich hin murmeln: "Ihr habt doch alle keine Ahnung..."', trait: 'zynisch', tone: 'rebellisch' },
+  ],
+};
+
+const stepTwoOptions = {
+  hildegard: [
+    { id: 'h1', text: 'Unterwürfig nicken: "Ja, das sehe ich genau so, mein Lieber."', trait: 'unterwerfend', tone: 'supportiv' },
+    { id: 'h2', text: 'Vorsichtig hinweisen: "Aber Rudolph... hast du nicht gehört, dass die Meinungen sich unterscheiden?"', trait: 'vermittelnd', tone: 'vorsichtig' },
+    { id: 'h3', text: 'Die Tränen steigen ihr in die Augen und sie beginnt zu weinen', trait: 'emotional', tone: 'verzweifelt' },
+  ],
+  luise: [
+    { id: 'l1', text: 'Traurig aufstehen und weinend aus dem Raum rennen', trait: 'gekränkt', tone: 'emotional' },
+    { id: 'l2', text: 'Sich verteidigen: "Das werde ich Friedrich erzählen! Ihr werdet schon sehen..."', trait: 'trotzig', tone: 'drohend' },
+    { id: 'l3', text: 'Weiter ablenken: "Aber zurück zu meinem Ball..."', trait: 'stur-naiv', tone: 'ablenkend' },
+  ],
+  peter: [
+    { id: 'p1', text: 'Zustimmend: "Ja Vater, ich stimme dir zu. Gemeinsam sind wir stärker."', trait: 'loyal', tone: 'supportiv' },
+    { id: 'p2', text: 'Ambitioniert: "Wenn ich das Gut übernehme, werde ich es noch größer machen! Ich habe bereits Pläne..."', trait: 'ambitioniert', tone: 'selbstbezogen' },
+    { id: 'p3', text: 'Zustimmend nicken, aber ruhig', trait: 'zurückhaltend', tone: 'neutral-positiv' },
+  ],
+  pinkas: [
+    { id: 'pi1', text: 'Laut widersprechen: "Nein, sind wir nicht! Das Volk braucht das Geld mehr als wir!"', trait: 'rebellisch', tone: 'konfrontativ' },
+    { id: 'pi2', text: 'Marie fest anschauen', trait: 'verschwiegen-romantisch', tone: 'still' },
+    { id: 'pi3', text: 'Lustlos im Salat stochern, ohne etwas zu sagen', trait: 'desinteressiert', tone: 'passiv' },
+  ],
+};
+
+const stepThreeOptions = {
+  hildegard: [
+    { id: 'h1', text: 'Peter einen bösen, strafenden Blick zuwerfen', trait: 'missbilligend', tone: 'warnend' },
+    { id: 'h2', text: 'Sanft nach Luises Hand greifen und sie beruhigend drücken', trait: 'mütterlich', tone: 'tröstend' },
+    { id: 'h3', text: 'Stumm den eigenen Braten schneiden, den Blick gesenkt', trait: 'zurückgezogen', tone: 'vermeidend' },
+  ],
+  luise: [
+    { id: 'l1', text: 'Stumm schmollen, Arme verschränkt', trait: 'beleidigt', tone: 'trotzig' },
+    { id: 'l2', text: 'Eifrig nicken: "Ja, Pinkas hat recht!"', trait: 'naiv-zustimmend', tone: 'ahnungslos' },
+    { id: 'l3', text: 'Pingelig in den Rindsbraten stechen, ohne zu essen', trait: 'appetitlos', tone: 'unruhig' },
+  ],
+  peter: [
+    { id: 'p1', text: 'Verächtlich über die Armen reden', trait: 'arrogant', tone: 'abwertend' },
+    { id: 'p2', text: 'Sich beim Vater einschmeicheln: "Dann machen halt nur wir zwei mit."', trait: 'opportunistisch', tone: 'manipulativ' },
+    { id: 'p3', text: 'Wut und Anspannung, aber schweigend', trait: 'aufgestaut', tone: 'kurz vor Explosion' },
+  ],
+  pinkas: [
+    { id: 'pi1', text: 'Berührend Marie beim Vorbeigehen – kurzer, elektrischer Moment', trait: 'romantisch', tone: 'heimlich-intim' },
+    { id: 'pi2', text: 'Marie lange und lustvoll ansehen, während sie serviert', trait: 'verlangend', tone: 'offensichtlich' },
+    { id: 'pi3', text: 'Erleichtert aufseufzen, als Marie zustimmt', trait: 'verbündet', tone: 'verstanden' },
+  ],
+};
+
+const stepFourOptions = {
+  hildegard: [
+    { id: 'h1', text: 'Wütend: "Diese Familie fällt auseinander!"', trait: 'wütend', tone: 'verzweifelt-aggressiv' },
+    { id: 'h2', text: 'Pinkas anschreien: "Wie konntest du nur?!"', trait: 'enttäuscht', tone: 'anklagend' },
+    { id: 'h3', text: 'Schockiert Sorbet löffeln, apathisch', trait: 'dissoziiert', tone: 'apathisch' },
+  ],
+  luise: [
+    { id: 'l1', text: 'Aufgeregt rufen: "Vater! Schau, Pinkas berührt sie!"', trait: 'naiv-eifrig', tone: 'verspätet' },
+    { id: 'l2', text: 'Sorbet abwehrend: "Bäh! So sauer!"', trait: 'weltfremd', tone: 'ignorant' },
+    { id: 'l3', text: 'Pinkas anstarren, schockiert, stumm', trait: 'fassungslos', tone: 'stumm' },
+  ],
+  peter: [
+    { id: 'p1', text: 'Stuhl zurückwerfen, auf den Tisch schlagen: "GENUG!"', trait: 'gewalttätig', tone: 'explosiv' },
+    { id: 'p2', text: 'Pinkas beleidigen: "Versager!"', trait: 'verletzend', tone: 'verachtungsvoll' },
+    { id: 'p3', text: 'Pinkas eine Ohrfeige geben', trait: 'körperlich aggressiv', tone: 'handgreiflich' },
+  ],
+  pinkas: [
+    { id: 'pi1', text: 'Schützend hinter Marie stehen: "Ich weiche nicht von ihrer Seite."', trait: 'beschützend', tone: 'entschlossen' },
+    { id: 'pi2', text: 'Erklären: "Man sucht sich nicht aus, wen man liebt!"', trait: 'verteidigend', tone: 'emotional' },
+    { id: 'pi3', text: 'Resigniert hinsetzen, schweigend', trait: 'aufgebend', tone: 'geschlagen' },
+  ],
+};
+
+const stepFiveOptions = {
+  hildegard: [
+    { id: 'h1', text: 'Tief und erleichtert ausatmen', trait: 'erleichtert', tone: 'befreit' },
+    { id: 'h2', text: 'Ein Dankesgebet murmeln', trait: 'religiös-dankbar', tone: 'fromm' },
+    { id: 'h3', text: 'Leise lächeln – sie wusste es', trait: 'selbstsicher', tone: 'wissend' },
+  ],
+  luise: [
+    { id: 'l1', text: 'Erst realisieren: "Meine Kleider! Mein Schmuck! Alles wäre weg gewesen!"', trait: 'materialistisch', tone: 'verspätet-schockiert' },
+    { id: 'l2', text: 'Aufspringen: "Diese Nachricht muss ich sofort Friedrich überbringen!"', trait: 'pflichtbewusst', tone: 'aufgeregt' },
+    { id: 'l3', text: 'Ruhig dasitzen und sanft lächeln', trait: 'friedlich', tone: 'unbeteiligt' },
+  ],
+  peter: [
+    { id: 'p1', text: 'Hämisch lachen: "Pech gehabt, Gesindel!"', trait: 'schadenfroh', tone: 'triumphierend' },
+    { id: 'p2', text: 'Zu Pinkas grinsen: "Ha! Pech gehabt, Bruder!"', trait: 'spöttisch', tone: 'höh­nisch' },
+    { id: 'p3', text: 'Ironisch seufzen: "Diese armen, armen Leute..."', trait: 'zynisch', tone: 'sarkastisch' },
+  ],
+  pinkas: [
+    { id: 'pi1', text: 'Enttäuscht in die Kaffeetasse starren', trait: 'resigniert', tone: 'traurig' },
+    { id: 'pi2', text: 'Aufstehen und Marie tröstend umarmen', trait: 'fürsorglich', tone: 'liebevoll' },
+    { id: 'pi3', text: 'Langsam nicken – es ist vorbei', trait: 'akzeptierend', tone: 'geschlagen' },
+  ],
+};
+
+// Beispiel für eine Szenario-Generatorfunktion (verkürzt)
+// *** Hier kannst du deinen vollständigen narrativen Text einsetzen ***
+function generateStepFiveScenario(choices) {
+  const h = choices.hildegard;
+  const l = choices.luise;
+  const p = choices.peter;
+  const pi = choices.pinkas;
+  const lines = [];
+
+  lines.push('Stille.\\n\\nNur die Volksmusik aus dem Radio erfüllt den Raum …\\n');
+  lines.push(`(Ausgewählte Optionen: Hildegard=${h}, Luise=${l}, Peter=${p}, Pinkas=${pi})\\n\\n`);
+  lines.push('--- Ende der Szene ---');
+
+  return lines.join('');
+}
+
+function FuerstenenteignungGame() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [currentCharIndex, setCurrentCharIndex] = useState(0);
+  const [choices, setChoices] = useState({});
+  const [finalScenario, setFinalScenario] = useState(null);
+
+  const optionsByStep = [stepOneOptions, stepTwoOptions, stepThreeOptions, stepFourOptions, stepFiveOptions];
+  const currentCharacter = characters[currentCharIndex];
+  const currentOptions = (optionsByStep[currentStep] || {})[currentCharacter] || [];
+
+  const handleChoice = (opt) => {
+    setChoices(prev => {
+      const s = prev[currentStep] || {};
+      return { ...prev, [currentStep]: { ...s, [currentCharacter]: opt.id } };
+    });
+    const nextIndex = currentCharIndex + 1;
+    if (nextIndex < characters.length) {
+      setCurrentCharIndex(nextIndex);
+    } else {
+      if (currentStep === optionsByStep.length - 1) {
+        const all = { ...choices, [currentStep]: { ...(choices[currentStep] || {}), [currentCharacter]: opt.id } };
+        setFinalScenario(generateStepFiveScenario(all));
+      } else {
+        setCurrentStep(currentStep + 1);
+        setCurrentCharIndex(0);
+      }
+    }
+  };
+
+  const restart = () => {
+    setCurrentStep(0);
+    setCurrentCharIndex(0);
+    setChoices({});
+    setFinalScenario(null);
+  };
+
+  if (finalScenario) {
+    return (
+      <div className="container">
+        <div className="header"><h1>Ende der Geschichte</h1></div>
+        <div className="scenario">{finalScenario}</div>
+        <button className="button" onClick={restart}>Noch einmal spielen</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container">
+      <div className="header">
+        <h1>Fürstenenteignung 1926 – Familienessen</h1>
+        <p>Gang {currentStep + 1} – Charakter: {characterNames[currentCharacter]}</p>
+      </div>
+      <div id="options">
+        {currentOptions.map(opt => (
+          <button key={opt.id} className="button" onClick={() => handleChoice(opt)}>
+            {opt.text}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<FuerstenenteignungGame />);
+
+</script>
+
+</body>
+</html>
